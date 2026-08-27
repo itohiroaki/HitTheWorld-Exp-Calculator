@@ -1,9 +1,9 @@
 let expTable = {};
 
 
-// ==============================
+// ==========================================
 // 経験値テーブル読み込み
-// ==============================
+// ==========================================
 
 async function loadExpTable() {
 
@@ -62,9 +62,9 @@ async function loadExpTable() {
 }
 
 
-// ==============================
+// ==========================================
 // Lv○○の100%経験値取得
-// ==============================
+// ==========================================
 
 function getExp100(level) {
 
@@ -79,12 +79,16 @@ function getExp100(level) {
     }
 
 
+    // 数値形式にも対応
+
     if (typeof data === "number") {
 
         return data;
 
     }
 
+
+    // 現在使用している形式
 
     if (
         typeof data === "object" &&
@@ -103,9 +107,21 @@ function getExp100(level) {
 }
 
 
-// ==============================
+// ==========================================
+// 数値をEXP表記に変換
+// ==========================================
+
+function formatExp(value) {
+
+    return Math.round(value)
+        .toLocaleString("ja-JP");
+
+}
+
+
+// ==========================================
 // 日付フォーマット
-// ==============================
+// ==========================================
 
 function formatDate(date) {
 
@@ -121,9 +137,9 @@ function formatDate(date) {
 }
 
 
-// ==============================
-// 必要経験値計算
-// ==============================
+// ==========================================
+// メイン計算
+// ==========================================
 
 function calculateRequiredExp() {
 
@@ -151,7 +167,7 @@ function calculateRequiredExp() {
         );
 
 
-    const expPerHour =
+    const expPerHourPercent =
         Number(
             document.getElementById(
                 "expPerHour"
@@ -188,34 +204,41 @@ function calculateRequiredExp() {
     result.hidden = false;
 
 
-    // ==============================
+    // ==========================================
     // 入力チェック
-    // ==============================
+    // ==========================================
 
     if (
         !Number.isFinite(currentLevel) ||
         !Number.isFinite(currentExp) ||
         !Number.isFinite(targetLevel) ||
-        !Number.isFinite(expPerHour) ||
+        !Number.isFinite(expPerHourPercent) ||
         !Number.isFinite(hoursPerDay)
     ) {
 
         resultContent.innerHTML =
-            `<div class="error">
+            `
+            <div class="error">
                 数値を正しく入力してください。
-            </div>`;
+            </div>
+            `;
 
         return;
 
     }
 
 
-    if (currentExp < 0 || currentExp >= 100) {
+    if (
+        currentExp < 0 ||
+        currentExp >= 100
+    ) {
 
         resultContent.innerHTML =
-            `<div class="error">
+            `
+            <div class="error">
                 現在の経験値は0%以上100%未満で入力してください。
-            </div>`;
+            </div>
+            `;
 
         return;
 
@@ -225,21 +248,25 @@ function calculateRequiredExp() {
     if (targetLevel <= currentLevel) {
 
         resultContent.innerHTML =
-            `<div class="error">
+            `
+            <div class="error">
                 目標レベルは現在レベルより高くしてください。
-            </div>`;
+            </div>
+            `;
 
         return;
 
     }
 
 
-    if (expPerHour <= 0) {
+    if (expPerHourPercent <= 0) {
 
         resultContent.innerHTML =
-            `<div class="error">
+            `
+            <div class="error">
                 現在の狩り効率は0より大きくしてください。
-            </div>`;
+            </div>
+            `;
 
         return;
 
@@ -252,9 +279,12 @@ function calculateRequiredExp() {
     ) {
 
         resultContent.innerHTML =
-            `<div class="error">
-                1日の狩り時間は0より大きく、24時間以下で入力してください。
-            </div>`;
+            `
+            <div class="error">
+                1日の狩り時間は0より大きく、
+                24時間以下で入力してください。
+            </div>
+            `;
 
         return;
 
@@ -264,18 +294,29 @@ function calculateRequiredExp() {
     if (!targetDateValue) {
 
         resultContent.innerHTML =
-            `<div class="error">
+            `
+            <div class="error">
                 目標日を入力してください。
-            </div>`;
+            </div>
+            `;
 
         return;
 
     }
 
 
-    // ==============================
-    // 経験値データ確認
-    // ==============================
+    // ==========================================
+    // 必要な経験値データを確認
+    //
+    // Lv86 → Lv90なら
+    //
+    // Lv86
+    // Lv87
+    // Lv88
+    // Lv89
+    //
+    // が必要
+    // ==========================================
 
     const missingLevels = [];
 
@@ -306,7 +347,8 @@ function calculateRequiredExp() {
 
 
         resultContent.innerHTML =
-            `<div class="warning">
+            `
+            <div class="warning">
 
                 <strong>
                     計算に必要な経験値データが不足しています。
@@ -325,25 +367,52 @@ function calculateRequiredExp() {
                     計算できるようになります。
                 </p>
 
-            </div>`;
+            </div>
+            `;
 
         return;
 
     }
 
 
-    // ==============================
-    // 必要経験値
-    // ==============================
-
-    let requiredExp = 0;
-
-
-    // 現在レベルの残り
+    // ==========================================
+    // 現在レベルの100%経験値
+    // ==========================================
 
     const currentLevelExp =
         getExp100(currentLevel);
 
+
+    // ==========================================
+    // 現在の「%/h」を実EXP/hへ変換
+    //
+    // 例：
+    //
+    // Lv86
+    // 586,175,459,470 EXP
+    //
+    // 1.38%/h
+    //
+    // ↓
+    //
+    // 約8.09億 EXP/h
+    // ==========================================
+
+    const actualExpPerHour =
+        currentLevelExp *
+        (
+            expPerHourPercent / 100
+        );
+
+
+    // ==========================================
+    // 必要経験値
+    // ==========================================
+
+    let requiredExp = 0;
+
+
+    // 現在レベルの残り経験値
 
     requiredExp +=
         currentLevelExp *
@@ -367,27 +436,13 @@ function calculateRequiredExp() {
     }
 
 
-    // ==============================
-    // 現在レベルの実EXP/h
-    // ==============================
-
-    const expPerHourActual =
-        (
-            currentLevelExp / 100
-        ) *
-        expPerHour;
-
-
-    // ==============================
-    // 必要時間
-    //
-    // 現在の狩り効率を
-    // 目標レベルまで維持する
-    // ==============================
+    // ==========================================
+    // 必要狩り時間
+    // ==========================================
 
     const requiredHours =
         requiredExp /
-        expPerHourActual;
+        actualExpPerHour;
 
 
     const requiredDays =
@@ -395,9 +450,56 @@ function calculateRequiredExp() {
         hoursPerDay;
 
 
-    // ==============================
+    // ==========================================
+    // レベル別の予想効率
+    // ==========================================
+
+    let levelRows = "";
+
+
+    for (
+        let level = currentLevel;
+        level < targetLevel;
+        level++
+    ) {
+
+        const levelExp =
+            getExp100(level);
+
+
+        const levelPercentPerHour =
+            actualExpPerHour /
+            levelExp *
+            100;
+
+
+        levelRows +=
+            `
+            <tr>
+
+                <td>
+                    Lv${level}
+                </td>
+
+                <td>
+                    ${formatExp(levelExp)}
+                </td>
+
+                <td>
+                    ${levelPercentPerHour.toFixed(2)}%
+                </td>
+
+            </tr>
+            `;
+
+    }
+
+
+    // ==========================================
     // 到達予定日
-    // ==============================
+    //
+    // 1日の狩り時間を考慮
+    // ==========================================
 
     const today =
         new Date();
@@ -409,16 +511,17 @@ function calculateRequiredExp() {
 
     arrivalDate.setTime(
         arrivalDate.getTime() +
-        requiredHours *
+        requiredDays *
+        24 *
         60 *
         60 *
         1000
     );
 
 
-    // ==============================
+    // ==========================================
     // 目標日
-    // ==============================
+    // ==========================================
 
     const targetDate =
         new Date(
@@ -442,26 +545,38 @@ function calculateRequiredExp() {
         );
 
 
-    // ==============================
-    // 目標日までに必要な効率
-    // ==============================
+    // ==========================================
+    // 目標日までに必要な実EXP/h
+    // ==========================================
 
-    const requiredExpPerHour =
-        requiredExp /
-        (
-            (
-                remainingDays *
-                hoursPerDay
-            ) *
-            (
-                currentLevelExp / 100
-            )
-        );
+    const availableHours =
+        Math.max(
+            0,
+            remainingDays
+        ) *
+        hoursPerDay;
 
 
-    // ==============================
-    // 判定
-    // ==============================
+    const requiredActualExpPerHour =
+        availableHours > 0
+            ? requiredExp / availableHours
+            : Infinity;
+
+
+    // ==========================================
+    // 現在レベル基準の
+    // 必要%/hへ変換
+    // ==========================================
+
+    const requiredPercentPerHour =
+        requiredActualExpPerHour /
+        currentLevelExp *
+        100;
+
+
+    // ==========================================
+    // 到達判定
+    // ==========================================
 
     const canReach =
         requiredDays <= remainingDays;
@@ -473,33 +588,38 @@ function calculateRequiredExp() {
     if (canReach) {
 
         statusHTML =
-            `<div class="result-highlight">
+            `
+            <div class="result-highlight">
 
                 <div class="status-ok">
                     🟢 目標日までに到達可能
                 </div>
 
-            </div>`;
+            </div>
+            `;
 
     } else {
 
         statusHTML =
-            `<div class="result-highlight">
+            `
+            <div class="result-highlight">
 
                 <div class="status-ng">
                     🔴 現在のペースでは間に合いません
                 </div>
 
-            </div>`;
+            </div>
+            `;
 
     }
 
 
-    // ==============================
+    // ==========================================
     // 結果表示
-    // ==============================
+    // ==========================================
 
-    resultContent.innerHTML = `
+    resultContent.innerHTML =
+        `
 
         <div class="result-item">
             現在レベル：
@@ -529,13 +649,22 @@ function calculateRequiredExp() {
 
 
         <div class="result-item">
-            必要経験値
+            現在の実EXP効率：
         </div>
 
 
         <div class="result-value">
-            ${requiredExp.toLocaleString()}
-            EXP
+            ${formatExp(actualExpPerHour)}
+            EXP / 時間
+        </div>
+
+
+        <div class="result-item">
+            必要経験値：
+            <strong>
+                ${formatExp(requiredExp)}
+                EXP
+            </strong>
         </div>
 
 
@@ -591,7 +720,7 @@ function calculateRequiredExp() {
         <div class="result-item">
             現在の狩り効率：
             <strong>
-                ${expPerHour.toFixed(2)}
+                ${expPerHourPercent.toFixed(2)}
                 % / 時間
             </strong>
         </div>
@@ -600,7 +729,10 @@ function calculateRequiredExp() {
         <div class="result-item">
             目標日までに必要な効率：
             <strong>
-                ${requiredExpPerHour.toFixed(2)}
+                ${isFinite(requiredPercentPerHour)
+                    ? requiredPercentPerHour.toFixed(2)
+                    : "計算不可"
+                }
                 % / 時間
             </strong>
         </div>
@@ -608,14 +740,60 @@ function calculateRequiredExp() {
 
         ${statusHTML}
 
-    `;
+
+        <hr>
+
+
+        <h4>
+            レベル別の予想経験値効率
+        </h4>
+
+
+        <p class="input-note">
+            現在の実EXP効率を維持した場合の、
+            各レベルでの%/hです。
+        </p>
+
+
+        <table class="level-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        レベル
+                    </th>
+
+                    <th>
+                        100%経験値
+                    </th>
+
+                    <th>
+                        予想効率
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                ${levelRows}
+
+            </tbody>
+
+        </table>
+
+        `;
 
 }
 
 
-// ==============================
-// ボタン
-// ==============================
+// ==========================================
+// 計算ボタン
+// ==========================================
 
 document
     .getElementById(
@@ -627,8 +805,8 @@ document
     );
 
 
-// ==============================
+// ==========================================
 // 初期処理
-// ==============================
+// ==========================================
 
 loadExpTable();

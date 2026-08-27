@@ -30,6 +30,7 @@ body {
 
 h1 {
     margin-bottom: 5px;
+
     text-align: center;
 }
 
@@ -187,6 +188,8 @@ button:hover {
     font-size: 22px;
 
     font-weight: bold;
+
+    word-break: break-all;
 }
 
 
@@ -240,6 +243,38 @@ button:hover {
     background: #f8d7da;
 
     color: #842029;
+}
+
+
+.level-table {
+    width: 100%;
+
+    margin-top: 20px;
+
+    border-collapse: collapse;
+
+    background: white;
+}
+
+
+.level-table th,
+.level-table td {
+    padding: 8px;
+
+    border-bottom: 1px solid #ddd;
+
+    text-align: right;
+}
+
+
+.level-table th:first-child,
+.level-table td:first-child {
+    text-align: center;
+}
+
+
+.level-table th {
+    background: #eee;
 }
 
 
