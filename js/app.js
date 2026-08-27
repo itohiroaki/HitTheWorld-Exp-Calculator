@@ -567,7 +567,7 @@ function calculateRequiredExp() {
 
 
     // ==========================================
-    // 目標日
+    // 目標日判定
     // ==========================================
 
     const targetDate =
@@ -698,6 +698,223 @@ function calculateRequiredExp() {
 
     }
 
+
+ // ==========================================
+// 到達レベル別一覧
+// ==========================================
+
+const levelSummary =
+    document.getElementById(
+        "levelSummary"
+    );
+
+const levelSummaryBody =
+    document.getElementById(
+        "levelSummaryBody"
+    );
+
+levelSummary.hidden = false;
+
+let summaryHTML = "";
+
+
+// 現在レベル+1 ～ 目標レベルまで表示
+for (
+    let summaryTargetLevel = currentLevel + 1;
+    summaryTargetLevel <= targetLevel;
+    summaryTargetLevel++
+) {
+
+    let totalSummaryExp = 0;
+
+    let totalSummaryHours = 0;
+
+    let canCalculate = true;
+
+
+    // 現在レベルから目標レベル直前まで計算
+    for (
+        let level = currentLevel;
+        level < summaryTargetLevel;
+        level++
+    ) {
+
+        const levelExp =
+            getExp100(level);
+
+
+        // 必要な経験値データがない
+        if (levelExp === null) {
+
+            canCalculate = false;
+
+            break;
+
+        }
+
+
+        let requiredExp;
+
+
+        // 現在レベルの場合
+        if (
+            level === currentLevel
+        ) {
+
+            requiredExp =
+                levelExp *
+                (
+                    1 -
+                    currentExp / 100
+                );
+
+        }
+
+        // それ以外は100%
+        else {
+
+            requiredExp =
+                levelExp;
+
+        }
+
+
+        totalSummaryExp +=
+            requiredExp;
+
+
+        totalSummaryHours +=
+            requiredExp /
+            actualExpPerHour;
+
+    }
+
+
+    // ==========================================
+    // データ不足
+    // ==========================================
+
+    if (!canCalculate) {
+
+        summaryHTML +=
+            `
+            <tr>
+
+                <td>
+                    <strong>
+                        Lv${summaryTargetLevel}
+                    </strong>
+                </td>
+
+                <td colspan="5">
+                    🔴 データ不足
+                </td>
+
+            </tr>
+            `;
+
+        continue;
+
+    }
+
+
+    // ==========================================
+    // 必要日数
+    // ==========================================
+
+    const summaryDays =
+        totalSummaryHours /
+        hoursPerDay;
+
+
+    // ==========================================
+    // 到達予定日
+    // ==========================================
+
+    const summaryArrivalDate =
+        new Date(today);
+
+
+    summaryArrivalDate.setTime(
+
+        summaryArrivalDate.getTime() +
+
+        summaryDays *
+        24 *
+        60 *
+        60 *
+        1000
+
+    );
+
+
+    // ==========================================
+    // 目標日までに到達可能か
+    // ==========================================
+
+    const isBeforeTarget =
+        summaryDays <=
+        remainingDays;
+
+
+    const status =
+        isBeforeTarget
+            ? "🟢"
+            : "🔴";
+
+
+    // ==========================================
+    // 表へ追加
+    // ==========================================
+
+    summaryHTML +=
+        `
+        <tr>
+
+            <td>
+                <strong>
+                    Lv${summaryTargetLevel}
+                </strong>
+            </td>
+
+            <td>
+                ${formatExp(
+                    totalSummaryExp
+                )}
+            </td>
+
+            <td>
+                ${totalSummaryHours.toFixed(1)}
+                h
+            </td>
+
+            <td>
+                ${summaryDays.toFixed(2)}
+                日
+            </td>
+
+            <td>
+                ${formatDate(
+                    summaryArrivalDate
+                )}
+            </td>
+
+            <td>
+                ${status}
+            </td>
+
+        </tr>
+        `;
+
+}
+
+
+// ==========================================
+// 表示
+// ==========================================
+
+levelSummaryBody.innerHTML =
+    summaryHTML;
 
     // ==========================================
     // 結果表示
