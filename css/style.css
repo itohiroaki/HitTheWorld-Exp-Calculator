@@ -291,3 +291,18 @@ button:hover {
 
     font-size: 14px;
 }
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+
+.table-wrapper .level-table {
+    min-width: 600px;
+}
+
+
+.level-table td,
+.level-table th {
+    white-space: nowrap;
+}
