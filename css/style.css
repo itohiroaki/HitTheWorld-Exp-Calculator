@@ -12,10 +12,11 @@ body {
     color: #222;
 }
 
+
 .container {
     max-width: 700px;
 
-    margin: 60px auto;
+    margin: 40px auto;
     padding: 30px;
 
     background: white;
@@ -24,26 +25,117 @@ body {
 
     box-shadow:
         0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+
+h1 {
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+
+h2 {
+    margin-top: 5px;
+
+    color: #555;
 
     text-align: center;
 }
 
-h1 {
-    margin-bottom: 5px;
+
+h3 {
+    margin-top: 0;
 }
 
-h2 {
-    margin-top: 5px;
+
+.description {
+    text-align: center;
+
+    color: #666;
+}
+
+
+hr {
+    margin: 30px 0;
+
+    border: none;
+
+    border-top: 1px solid #ddd;
+}
+
+
+.calculator {
+    max-width: 450px;
+
+    margin: 0 auto;
+}
+
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-weight: bold;
+}
+
+
+input {
+    box-sizing: border-box;
+
+    width: 100%;
+
+    padding: 10px 12px;
+
+    border: 1px solid #ccc;
+
+    border-radius: 6px;
+
+    font-size: 16px;
+}
+
+
+.input-with-unit {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+.input-with-unit input {
+    flex: 1;
+}
+
+
+.input-with-unit span {
+    white-space: nowrap;
+
+    font-weight: bold;
+
     color: #555;
 }
 
+
 button {
-    padding: 10px 25px;
+    display: block;
+
+    width: 100%;
+
+    padding: 12px 20px;
 
     border: none;
+
     border-radius: 6px;
 
     background: #333;
+
     color: white;
 
     font-size: 16px;
@@ -51,6 +143,105 @@ button {
     cursor: pointer;
 }
 
+
 button:hover {
     opacity: 0.8;
+}
+
+
+.result {
+    margin-top: 30px;
+
+    padding: 20px;
+
+    border-radius: 8px;
+
+    background: #f4f6f8;
+}
+
+
+.result h3 {
+    margin-bottom: 20px;
+}
+
+
+.result-item {
+    margin: 12px 0;
+
+    font-size: 16px;
+}
+
+
+.result-value {
+    font-size: 22px;
+
+    font-weight: bold;
+}
+
+
+.result-highlight {
+    margin-top: 20px;
+
+    padding: 15px;
+
+    border-radius: 8px;
+
+    background: white;
+
+    text-align: center;
+
+    font-size: 18px;
+
+    font-weight: bold;
+}
+
+
+.status-ok {
+    font-size: 22px;
+
+    font-weight: bold;
+}
+
+
+.status-ng {
+    font-size: 22px;
+
+    font-weight: bold;
+}
+
+
+.warning {
+    padding: 15px;
+
+    border-radius: 6px;
+
+    background: #fff3cd;
+
+    color: #664d03;
+}
+
+
+.error {
+    padding: 15px;
+
+    border-radius: 6px;
+
+    background: #f8d7da;
+
+    color: #842029;
+}
+
+
+.data-status {
+    margin-top: 30px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #ddd;
+
+    text-align: center;
+
+    color: #666;
+
+    font-size: 14px;
 }
