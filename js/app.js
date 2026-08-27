@@ -28,39 +28,22 @@ const DEFAULT_SETTINGS = {
 
 function setDefaultValues() {
 
-    document.getElementById(
-        "currentLevel"
-    ).value =
+    document.getElementById("currentLevel").value =
         DEFAULT_SETTINGS.currentLevel;
 
-
-    document.getElementById(
-        "currentExp"
-    ).value =
+    document.getElementById("currentExp").value =
         DEFAULT_SETTINGS.currentExp;
 
-
-    document.getElementById(
-        "targetLevel"
-    ).value =
+    document.getElementById("targetLevel").value =
         DEFAULT_SETTINGS.targetLevel;
 
-
-    document.getElementById(
-        "expPerHour"
-    ).value =
+    document.getElementById("expPerHour").value =
         DEFAULT_SETTINGS.expPerHour;
 
-
-    document.getElementById(
-        "hoursPerDay"
-    ).value =
+    document.getElementById("hoursPerDay").value =
         DEFAULT_SETTINGS.hoursPerDay;
 
-
-    document.getElementById(
-        "targetDate"
-    ).value =
+    document.getElementById("targetDate").value =
         DEFAULT_SETTINGS.targetDate;
 
 }
@@ -77,7 +60,6 @@ async function loadExpTable() {
         const response =
             await fetch("data/exp_table.json");
 
-
         if (!response.ok) {
 
             throw new Error(
@@ -86,18 +68,13 @@ async function loadExpTable() {
 
         }
 
-
         expTable =
             await response.json();
-
 
         const levels =
             Object.keys(expTable)
                 .map(Number)
-                .sort(
-                    (a, b) => a - b
-                );
-
+                .sort((a, b) => a - b);
 
         if (levels.length === 0) {
 
@@ -107,17 +84,16 @@ async function loadExpTable() {
 
         }
 
-
         document
             .getElementById("dataStatus")
             .textContent =
             `経験値データ：Lv${levels[0]} ～ Lv${levels[levels.length - 1]}（${levels.length}件）`;
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
         console.error(error);
-
 
         document
             .getElementById("dataStatus")
@@ -138,20 +114,17 @@ function getExp100(level) {
     const data =
         expTable[String(level)];
 
-
     if (data === undefined) {
 
         return null;
 
     }
 
-
     if (typeof data === "number") {
 
         return data;
 
     }
-
 
     if (
         typeof data === "object" &&
@@ -163,7 +136,6 @@ function getExp100(level) {
         );
 
     }
-
 
     return null;
 
@@ -185,22 +157,6 @@ function formatExp(value) {
 // ==========================================
 // 日付フォーマット
 // ==========================================
-
-function formatDateTime(date) {
-
-    return date.toLocaleString(
-        "ja-JP",
-        {
-            year: "numeric",
-            month: "numeric",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        }
-    );
-
-}
-
 
 function formatDate(date) {
 
@@ -224,63 +180,66 @@ function calculateRequiredExp() {
 
     const currentLevel =
         Number(
-            document.getElementById(
-                "currentLevel"
-            ).value
+            document.getElementById("currentLevel").value
         );
-
 
     const currentExp =
         Number(
-            document.getElementById(
-                "currentExp"
-            ).value
+            document.getElementById("currentExp").value
         );
-
 
     const targetLevel =
         Number(
-            document.getElementById(
-                "targetLevel"
-            ).value
+            document.getElementById("targetLevel").value
         );
-
 
     const expPerHourPercent =
         Number(
-            document.getElementById(
-                "expPerHour"
-            ).value
+            document.getElementById("expPerHour").value
         );
-
 
     const hoursPerDay =
         Number(
-            document.getElementById(
-                "hoursPerDay"
-            ).value
+            document.getElementById("hoursPerDay").value
         );
 
-
     const targetDateValue =
-        document.getElementById(
-            "targetDate"
-        ).value;
+        document.getElementById("targetDate").value;
 
 
     const result =
-        document.getElementById(
-            "result"
-        );
-
+        document.getElementById("result");
 
     const resultContent =
-        document.getElementById(
-            "resultContent"
-        );
+        document.getElementById("resultContent");
+
+
+    const levelSummary =
+        document.getElementById("levelSummary");
+
+    const levelSummaryBody =
+        document.getElementById("levelSummaryBody");
+
+
+    const futureLevel =
+        document.getElementById("futureLevel");
+
+    const futureTargetDate =
+        document.getElementById("futureTargetDate");
+
+    const futureMaxLevel =
+        document.getElementById("futureMaxLevel");
+
+    const futureLevelStatus =
+        document.getElementById("futureLevelStatus");
+
+    const futureAvailableExp =
+        document.getElementById("futureAvailableExp");
 
 
     result.hidden = false;
+    levelSummary.hidden = true;
+    futureLevel.hidden = true;
 
 
     // ==========================================
@@ -370,8 +329,63 @@ function calculateRequiredExp() {
     }
 
 
+    if (!targetDateValue) {
+
+        resultContent.innerHTML =
+            `
+            <div class="error">
+                目標日を入力してください。
+            </div>
+            `;
+
+        return;
+
+    }
+
+
     // ==========================================
-    // 必要データ確認
+    // 現在レベルの経験値
+    // ==========================================
+
+    const currentLevelExp =
+        getExp100(currentLevel);
+
+
+    if (currentLevelExp === null) {
+
+        resultContent.innerHTML =
+            `
+            <div class="warning">
+
+                <strong>
+                    現在レベルの経験値データがありません。
+                </strong>
+
+                <p>
+                    Lv${currentLevel} の経験値データを追加してください。
+                </p>
+
+            </div>
+            `;
+
+        return;
+
+    }
+
+
+    // ==========================================
+    // 現在の%/h → 実EXP/h
+    // ==========================================
+
+    const actualExpPerHour =
+        currentLevelExp *
+        (
+            expPerHourPercent / 100
+        );
+
+
+    // ==========================================
+    // 目標レベルまでのデータ確認
     // ==========================================
 
     const missingLevels = [];
@@ -396,9 +410,7 @@ function calculateRequiredExp() {
 
         const missingText =
             missingLevels
-                .map(
-                    level => `Lv${level}`
-                )
+                .map(level => `Lv${level}`)
                 .join("、");
 
 
@@ -429,25 +441,6 @@ function calculateRequiredExp() {
         return;
 
     }
-
-
-    // ==========================================
-    // 現在レベルの経験値
-    // ==========================================
-
-    const currentLevelExp =
-        getExp100(currentLevel);
-
-
-    // ==========================================
-    // 現在の%/h → 実EXP/h
-    // ==========================================
-
-    const actualExpPerHour =
-        currentLevelExp *
-        (
-            expPerHourPercent / 100
-        );
 
 
     // ==========================================
@@ -511,9 +504,6 @@ function calculateRequiredExp() {
 
             expNeeded,
 
-            expPerHour:
-                actualExpPerHour,
-
             percentPerHour:
                 levelPercentPerHour,
 
@@ -542,12 +532,16 @@ function calculateRequiredExp() {
 
 
     // ==========================================
-    // 到達予定日
+    // 現在日時
     // ==========================================
 
     const today =
         new Date();
 
+
+    // ==========================================
+    // 目標到達予定日
+    // ==========================================
 
     const arrivalDate =
         new Date(today);
@@ -567,7 +561,7 @@ function calculateRequiredExp() {
 
 
     // ==========================================
-    // 目標日判定
+    // 目標日
     // ==========================================
 
     const targetDate =
@@ -576,6 +570,10 @@ function calculateRequiredExp() {
             "T23:59:59"
         );
 
+
+    // ==========================================
+    // 目標日までの日数
+    // ==========================================
 
     const remainingDays =
         (
@@ -591,7 +589,7 @@ function calculateRequiredExp() {
 
 
     // ==========================================
-    // 目標日までに必要な実EXP/h
+    // 目標日までに狩りできる時間
     // ==========================================
 
     const availableHours =
@@ -602,20 +600,23 @@ function calculateRequiredExp() {
         hoursPerDay;
 
 
+    // ==========================================
+    // 目標日までに必要な実EXP/h
+    // ==========================================
+
+    const totalTargetExp =
+        simulationRows.reduce(
+            (total, row) =>
+                total +
+                row.expNeeded,
+            0
+        );
+
+
     const requiredActualExpPerHour =
         availableHours > 0
-            ? (
-                simulationRows
-                    .reduce(
-                        (
-                            total,
-                            row
-                        ) =>
-                            total +
-                            row.expNeeded,
-                        0
-                    )
-            ) / availableHours
+            ? totalTargetExp /
+              availableHours
             : Infinity;
 
 
@@ -626,7 +627,7 @@ function calculateRequiredExp() {
 
 
     // ==========================================
-    // 到達判定
+    // 目標レベル到達判定
     // ==========================================
 
     const canReach =
@@ -658,11 +659,10 @@ function calculateRequiredExp() {
 
 
     // ==========================================
-    // シミュレーション表
+    // レベルアップシミュレーション表
     // ==========================================
 
-    let simulationTable =
-        "";
+    let simulationTable = "";
 
 
     for (
@@ -698,406 +698,6 @@ function calculateRequiredExp() {
 
     }
 
-
- // ==========================================
-// 到達レベル別一覧
-// ==========================================
-
-const levelSummary =
-    document.getElementById(
-        "levelSummary"
-    );
-
-const levelSummaryBody =
-    document.getElementById(
-        "levelSummaryBody"
-    );
-
-levelSummary.hidden = false;
-
-let summaryHTML = "";
-
-
-// 現在レベル+1 ～ 目標レベルまで表示
-for (
-    let summaryTargetLevel = currentLevel + 1;
-    summaryTargetLevel <= targetLevel;
-    summaryTargetLevel++
-) {
-
-    let totalSummaryExp = 0;
-
-    let totalSummaryHours = 0;
-
-    let canCalculate = true;
-
-
-    // 現在レベルから目標レベル直前まで計算
-    for (
-        let level = currentLevel;
-        level < summaryTargetLevel;
-        level++
-    ) {
-
-        const levelExp =
-            getExp100(level);
-
-
-        // 必要な経験値データがない
-        if (levelExp === null) {
-
-            canCalculate = false;
-
-            break;
-
-        }
-
-
-        let requiredExp;
-
-
-        // 現在レベルの場合
-        if (
-            level === currentLevel
-        ) {
-
-            requiredExp =
-                levelExp *
-                (
-                    1 -
-                    currentExp / 100
-                );
-
-        }
-
-        // それ以外は100%
-        else {
-
-            requiredExp =
-                levelExp;
-
-        }
-
-
-        totalSummaryExp +=
-            requiredExp;
-
-
-        totalSummaryHours +=
-            requiredExp /
-            actualExpPerHour;
-
-    }
-
-
-// ==========================================
-// Ver.0.7
-// 目標日までの到達可能レベル
-// ==========================================
-
-const futureLevel =
-    document.getElementById(
-        "futureLevel"
-    );
-
-const futureTargetDate =
-    document.getElementById(
-        "futureTargetDate"
-    );
-
-const futureMaxLevel =
-    document.getElementById(
-        "futureMaxLevel"
-    );
-
-const futureLevelStatus =
-    document.getElementById(
-        "futureLevelStatus"
-    );
-
-const futureAvailableExp =
-    document.getElementById(
-        "futureAvailableExp"
-    );
-
-
-futureLevel.hidden = false;
-
-
-// ==========================================
-// 目標日までに狩りできる時間
-// ==========================================
-
-const availableHours =
-    remainingDays *
-    hoursPerDay;
-
-
-// ==========================================
-// 目標日までに獲得できるEXP
-// ==========================================
-
-const availableExp =
-    availableHours *
-    actualExpPerHour;
-
-
-// ==========================================
-// 目標日
-// ==========================================
-
-futureTargetDate.textContent =
-    formatDate(targetDate);
-
-
-// ==========================================
-// 現在の経験値から
-// 何Lvまで到達できるか計算
-// ==========================================
-
-let simulatedLevel =
-    currentLevel;
-
-let simulatedPercent =
-    currentExp;
-
-let remainingExp =
-    availableExp;
-
-
-// ==========================================
-// 最大レベルを順番にシミュレーション
-// ==========================================
-
-while (true) {
-
-    const levelExp =
-        getExp100(simulatedLevel);
-
-
-    // 経験値データがない
-    if (levelExp === null) {
-
-        break;
-
-    }
-
-
-    // 現在レベルで残っているEXP
-    const requiredExp =
-        levelExp *
-        (
-            1 -
-            simulatedPercent / 100
-        );
-
-
-    // 次のレベルに到達できる
-    if (
-        remainingExp >=
-        requiredExp
-    ) {
-
-        remainingExp -=
-            requiredExp;
-
-        simulatedLevel++;
-
-        simulatedPercent = 0;
-
-    }
-
-    // 到達できない
-    else {
-
-        simulatedPercent +=
-            (
-                remainingExp /
-                levelExp
-            ) *
-            100;
-
-        remainingExp = 0;
-
-        break;
-
-    }
-
-}
-
-
-// ==========================================
-// 結果表示
-// ==========================================
-
-futureMaxLevel.textContent =
-    `Lv${simulatedLevel}`;
-
-
-// ==========================================
-// 目標日までに獲得可能なEXP
-// ==========================================
-
-futureAvailableExp.textContent =
-    formatExp(
-        availableExp
-    ) +
-    " EXP";
-
-
-// ==========================================
-// ステータス
-// ==========================================
-
-if (
-    simulatedLevel >=
-    targetLevel
-) {
-
-    futureLevelStatus.textContent =
-        "🟢 目標レベルに到達可能です。";
-
-    futureLevelStatus.className =
-        "future-level-status success";
-
-}
-
-else {
-
-    futureLevelStatus.textContent =
-        `🔴 目標日までにLv${targetLevel}へ到達するには、現在の効率では不足しています。`;
-
-    futureLevelStatus.className =
-        "future-level-status danger";
-
-}
-
-
-    // ==========================================
-    // データ不足
-    // ==========================================
-
-    if (!canCalculate) {
-
-        summaryHTML +=
-            `
-            <tr>
-
-                <td>
-                    <strong>
-                        Lv${summaryTargetLevel}
-                    </strong>
-                </td>
-
-                <td colspan="5">
-                    🔴 データ不足
-                </td>
-
-            </tr>
-            `;
-
-        continue;
-
-    }
-
-
-    // ==========================================
-    // 必要日数
-    // ==========================================
-
-    const summaryDays =
-        totalSummaryHours /
-        hoursPerDay;
-
-
-    // ==========================================
-    // 到達予定日
-    // ==========================================
-
-    const summaryArrivalDate =
-        new Date(today);
-
-
-    summaryArrivalDate.setTime(
-
-        summaryArrivalDate.getTime() +
-
-        summaryDays *
-        24 *
-        60 *
-        60 *
-        1000
-
-    );
-
-
-    // ==========================================
-    // 目標日までに到達可能か
-    // ==========================================
-
-    const isBeforeTarget =
-        summaryDays <=
-        remainingDays;
-
-
-    const status =
-        isBeforeTarget
-            ? "🟢"
-            : "🔴";
-
-
-    // ==========================================
-    // 表へ追加
-    // ==========================================
-
-    summaryHTML +=
-        `
-        <tr>
-
-            <td>
-                <strong>
-                    Lv${summaryTargetLevel}
-                </strong>
-            </td>
-
-            <td>
-                ${formatExp(
-                    totalSummaryExp
-                )}
-            </td>
-
-            <td>
-                ${totalSummaryHours.toFixed(1)}
-                h
-            </td>
-
-            <td>
-                ${summaryDays.toFixed(2)}
-                日
-            </td>
-
-            <td>
-                ${formatDate(
-                    summaryArrivalDate
-                )}
-            </td>
-
-            <td>
-                ${status}
-            </td>
-
-        </tr>
-        `;
-
-}
-
-
-// ==========================================
-// 表示
-// ==========================================
-
-levelSummaryBody.innerHTML =
-    summaryHTML;
 
     // ==========================================
     // 結果表示
@@ -1147,18 +747,7 @@ levelSummaryBody.innerHTML =
         <div class="result-item">
             必要経験値：
             <strong>
-                ${formatExp(
-                    simulationRows
-                        .reduce(
-                            (
-                                total,
-                                row
-                            ) =>
-                                total +
-                                row.expNeeded,
-                            0
-                        )
-                )}
+                ${formatExp(totalTargetExp)}
                 EXP
             </strong>
         </div>
@@ -1250,6 +839,7 @@ levelSummaryBody.innerHTML =
 
         <p class="input-note">
             現在の実EXP効率を維持した場合のシミュレーションです。
+            レベルアップすると、同じEXP/hでも%/hは低下します。
         </p>
 
 
@@ -1261,25 +851,15 @@ levelSummaryBody.innerHTML =
 
                     <tr>
 
-                        <th>
-                            レベル
-                        </th>
+                        <th>レベル</th>
 
-                        <th>
-                            開始EXP
-                        </th>
+                        <th>開始EXP</th>
 
-                        <th>
-                            必要EXP
-                        </th>
+                        <th>必要EXP</th>
 
-                        <th>
-                            %/h
-                        </th>
+                        <th>%/h</th>
 
-                        <th>
-                            必要時間
-                        </th>
+                        <th>必要時間</th>
 
                     </tr>
 
@@ -1298,17 +878,356 @@ levelSummaryBody.innerHTML =
 
         `;
 
+
+    // ==========================================
+    // 到達レベル別一覧
+    // ==========================================
+
+    levelSummary.hidden = false;
+
+
+    let summaryHTML = "";
+
+
+    for (
+        let summaryTargetLevel = currentLevel + 1;
+        summaryTargetLevel <= targetLevel;
+        summaryTargetLevel++
+    ) {
+
+        let totalSummaryExp = 0;
+
+        let targetHours = 0;
+
+        let canCalculate = true;
+
+
+        // --------------------------------------
+        // 現在Lvから目標Lvまで
+        // --------------------------------------
+
+        for (
+            let level = currentLevel;
+            level < summaryTargetLevel;
+            level++
+        ) {
+
+            const levelExp =
+                getExp100(level);
+
+
+            if (levelExp === null) {
+
+                canCalculate = false;
+
+                break;
+
+            }
+
+
+            const requiredExp =
+                level === currentLevel
+
+                    ? levelExp *
+                      (
+                          1 -
+                          currentExp / 100
+                      )
+
+                    : levelExp;
+
+
+            const levelHours =
+                requiredExp /
+                actualExpPerHour;
+
+
+            totalSummaryExp +=
+                requiredExp;
+
+
+            targetHours +=
+                levelHours;
+
+        }
+
+
+        if (!canCalculate) {
+
+            summaryHTML +=
+                `
+                <tr>
+
+                    <td>
+                        <strong>
+                            Lv${summaryTargetLevel}
+                        </strong>
+                    </td>
+
+                    <td colspan="5">
+                        🔴 データ不足
+                    </td>
+
+                </tr>
+                `;
+
+            continue;
+
+        }
+
+
+        const targetDays =
+            targetHours /
+            hoursPerDay;
+
+
+        const summaryArrivalDate =
+            new Date(today);
+
+
+        summaryArrivalDate.setTime(
+
+            summaryArrivalDate.getTime() +
+
+            targetDays *
+            24 *
+            60 *
+            60 *
+            1000
+
+        );
+
+
+        const status =
+            targetDays <= remainingDays
+                ? "🟢"
+                : "🔴";
+
+
+        summaryHTML +=
+            `
+            <tr>
+
+                <td>
+                    <strong>
+                        Lv${summaryTargetLevel}
+                    </strong>
+                </td>
+
+                <td>
+                    ${formatExp(totalSummaryExp)}
+                </td>
+
+                <td>
+                    ${targetHours.toFixed(1)}
+                    h
+                </td>
+
+                <td>
+                    ${targetDays.toFixed(2)}
+                    日
+                </td>
+
+                <td>
+                    ${formatDate(summaryArrivalDate)}
+                </td>
+
+                <td>
+                    ${status}
+                </td>
+
+            </tr>
+            `;
+
+    }
+
+
+    levelSummaryBody.innerHTML =
+        summaryHTML;
+
+
+    // ==========================================
+    // 目標日までの完全シミュレーション
+    // ==========================================
+
+    futureLevel.hidden = false;
+
+
+    let remainingSimulationHours =
+        Math.max(
+            0,
+            remainingDays
+        ) *
+        hoursPerDay;
+
+
+    let simulatedLevel =
+        currentLevel;
+
+
+    let simulatedPercent =
+        currentExp;
+
+
+    let totalSimulationExp = 0;
+
+
+    // ==========================================
+    // 目標日まで順番にレベルアップ
+    // ==========================================
+
+    while (
+        remainingSimulationHours > 0
+    ) {
+
+        const levelExp =
+            getExp100(simulatedLevel);
+
+
+        // データがない場合は終了
+        if (levelExp === null) {
+
+            break;
+
+        }
+
+
+        // --------------------------------------
+        // 現在レベルで残っているEXP
+        // --------------------------------------
+
+        const requiredExp =
+            levelExp *
+            (
+                1 -
+                simulatedPercent / 100
+            );
+
+
+        // --------------------------------------
+        // 現在の実EXP/hで必要な時間
+        // --------------------------------------
+
+        const requiredHours =
+            requiredExp /
+            actualExpPerHour;
+
+
+        // --------------------------------------
+        // 次のLvへ到達できる
+        // --------------------------------------
+
+        if (
+            remainingSimulationHours >=
+            requiredHours
+        ) {
+
+            remainingSimulationHours -=
+                requiredHours;
+
+
+            totalSimulationExp +=
+                requiredExp;
+
+
+            simulatedLevel++;
+
+            simulatedPercent = 0;
+
+        }
+
+
+        // --------------------------------------
+        // 次のLvへ到達できない
+        // --------------------------------------
+
+        else {
+
+            const gainedExp =
+                remainingSimulationHours *
+                actualExpPerHour;
+
+
+            totalSimulationExp +=
+                gainedExp;
+
+
+            simulatedPercent +=
+                (
+                    gainedExp /
+                    levelExp
+                ) *
+                100;
+
+
+            remainingSimulationHours = 0;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // 目標日表示
+    // ==========================================
+
+    futureTargetDate.textContent =
+        formatDate(targetDate);
+
+
+    // ==========================================
+    // 予想到達レベル
+    // ==========================================
+
+    futureMaxLevel.textContent =
+        `Lv${simulatedLevel}`;
+
+
+    // ==========================================
+    // 目標日までに実際に獲得できるEXP
+    // ==========================================
+
+    futureAvailableExp.textContent =
+        formatExp(totalSimulationExp) +
+        " EXP";
+
+
+    // ==========================================
+    // ステータス
+    // ==========================================
+
+    if (
+        simulatedLevel >=
+        targetLevel
+    ) {
+
+        futureLevelStatus.textContent =
+            "🟢 目標レベルに到達可能です。";
+
+        futureLevelStatus.className =
+            "future-level-status success";
+
+    }
+
+    else {
+
+        futureLevelStatus.textContent =
+            `🔴 目標日までにLv${targetLevel}へ到達するには、現在の効率では不足しています。`;
+
+        futureLevelStatus.className =
+            "future-level-status danger";
+
+    }
+
 }
 
 
 // ==========================================
-// ボタン
+// 計算ボタン
 // ==========================================
 
 document
-    .getElementById(
-        "calculateButton"
-    )
+    .getElementById("calculateButton")
     .addEventListener(
         "click",
         calculateRequiredExp
