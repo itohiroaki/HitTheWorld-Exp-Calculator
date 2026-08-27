@@ -790,6 +790,189 @@ for (
     }
 
 
+// ==========================================
+// Ver.0.7
+// 目標日までの到達可能レベル
+// ==========================================
+
+const futureLevel =
+    document.getElementById(
+        "futureLevel"
+    );
+
+const futureTargetDate =
+    document.getElementById(
+        "futureTargetDate"
+    );
+
+const futureMaxLevel =
+    document.getElementById(
+        "futureMaxLevel"
+    );
+
+const futureLevelStatus =
+    document.getElementById(
+        "futureLevelStatus"
+    );
+
+const futureAvailableExp =
+    document.getElementById(
+        "futureAvailableExp"
+    );
+
+
+futureLevel.hidden = false;
+
+
+// ==========================================
+// 目標日までに狩りできる時間
+// ==========================================
+
+const availableHours =
+    remainingDays *
+    hoursPerDay;
+
+
+// ==========================================
+// 目標日までに獲得できるEXP
+// ==========================================
+
+const availableExp =
+    availableHours *
+    actualExpPerHour;
+
+
+// ==========================================
+// 目標日
+// ==========================================
+
+futureTargetDate.textContent =
+    formatDate(targetDate);
+
+
+// ==========================================
+// 現在の経験値から
+// 何Lvまで到達できるか計算
+// ==========================================
+
+let simulatedLevel =
+    currentLevel;
+
+let simulatedPercent =
+    currentExp;
+
+let remainingExp =
+    availableExp;
+
+
+// ==========================================
+// 最大レベルを順番にシミュレーション
+// ==========================================
+
+while (true) {
+
+    const levelExp =
+        getExp100(simulatedLevel);
+
+
+    // 経験値データがない
+    if (levelExp === null) {
+
+        break;
+
+    }
+
+
+    // 現在レベルで残っているEXP
+    const requiredExp =
+        levelExp *
+        (
+            1 -
+            simulatedPercent / 100
+        );
+
+
+    // 次のレベルに到達できる
+    if (
+        remainingExp >=
+        requiredExp
+    ) {
+
+        remainingExp -=
+            requiredExp;
+
+        simulatedLevel++;
+
+        simulatedPercent = 0;
+
+    }
+
+    // 到達できない
+    else {
+
+        simulatedPercent +=
+            (
+                remainingExp /
+                levelExp
+            ) *
+            100;
+
+        remainingExp = 0;
+
+        break;
+
+    }
+
+}
+
+
+// ==========================================
+// 結果表示
+// ==========================================
+
+futureMaxLevel.textContent =
+    `Lv${simulatedLevel}`;
+
+
+// ==========================================
+// 目標日までに獲得可能なEXP
+// ==========================================
+
+futureAvailableExp.textContent =
+    formatExp(
+        availableExp
+    ) +
+    " EXP";
+
+
+// ==========================================
+// ステータス
+// ==========================================
+
+if (
+    simulatedLevel >=
+    targetLevel
+) {
+
+    futureLevelStatus.textContent =
+        "🟢 目標レベルに到達可能です。";
+
+    futureLevelStatus.className =
+        "future-level-status success";
+
+}
+
+else {
+
+    futureLevelStatus.textContent =
+        `🔴 目標日までにLv${targetLevel}へ到達するには、現在の効率では不足しています。`;
+
+    futureLevelStatus.className =
+        "future-level-status danger";
+
+}
+
+
     // ==========================================
     // データ不足
     // ==========================================

@@ -350,3 +350,63 @@ button:hover {
     }
 
 }
+
+/* ==========================================
+   Ver.0.7
+   目標日までの到達予測
+========================================== */
+
+#futureLevel {
+    margin-top: 30px;
+}
+
+
+.future-level-result {
+    margin-top: 20px;
+}
+
+
+.future-level-label {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #666;
+}
+
+
+.future-target-date {
+    margin-top: 5px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+
+.future-max-level {
+    margin-top: 5px;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+
+.future-level-status {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+
+.future-level-status.success {
+    background: #e8f5e9;
+}
+
+
+.future-level-status.danger {
+    background: #ffebee;
+}
+
+
+.future-available-exp {
+    margin-top: 5px;
+    font-size: 18px;
+    font-weight: bold;
+}
