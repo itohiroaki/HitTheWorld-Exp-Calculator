@@ -123,6 +123,17 @@ input {
 }
 
 
+.input-note {
+    margin-top: 6px;
+
+    margin-bottom: 0;
+
+    color: #777;
+
+    font-size: 13px;
+}
+
+
 button {
     display: block;
 
