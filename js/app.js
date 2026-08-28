@@ -84,10 +84,233 @@ async function loadExpTable() {
 
         }
 
-        document
-            .getElementById("dataStatus")
-            .textContent =
-            `経験値データ：Lv${levels[0]} ～ Lv${levels[levels.length - 1]}（${levels.length}件）`;
+        // ==========================================
+// 経験値データ収集状況
+// ==========================================
+
+const minLevel = levels[0];
+const maxLevel = levels[levels.length - 1];
+
+
+// データあり
+const availableLevels = levels;
+
+
+// データ募集中
+const missingLevels = [];
+
+for (
+    let level = minLevel;
+    level <= maxLevel;
+    level++
+) {
+
+    if (
+        getExp100(level) === null
+    ) {
+
+        missingLevels.push(level);
+
+    }
+
+}
+
+
+// ==========================================
+// レベルを連続範囲にまとめる
+// 例：85,86,87,88,89 → Lv85～Lv89
+// ==========================================
+
+function formatLevelRanges(levels) {
+
+    if (levels.length === 0) {
+
+        return "なし";
+
+    }
+
+
+    const ranges = [];
+
+    let start = levels[0];
+    let end = levels[0];
+
+
+    for (
+        let i = 1;
+        i < levels.length;
+        i++
+    ) {
+
+        if (
+            levels[i] === end + 1
+        ) {
+
+            end = levels[i];
+
+        }
+
+        else {
+
+            if (start === end) {
+
+                ranges.push(
+                    `Lv${start}`
+                );
+
+            }
+
+            else {
+
+                ranges.push(
+                    `Lv${start}～Lv${end}`
+                );
+
+            }
+
+            start = levels[i];
+            end = levels[i];
+
+        }
+
+    }
+
+
+    if (start === end) {
+
+        ranges.push(
+            `Lv${start}`
+        );
+
+    }
+
+    else {
+
+        ranges.push(
+            `Lv${start}～Lv${end}`
+        );
+
+    }
+
+
+    return ranges.join("、");
+
+}
+
+
+// ==========================================
+// 表示
+// ==========================================
+
+const dataStatus =
+    document.getElementById(
+        "dataStatus"
+    );
+
+// ==========================================
+// 連続して存在するデータ範囲を確認
+// ==========================================
+
+let continuousStart = null;
+let continuousEnd = null;
+
+
+// 現在の最小レベルから順番に確認
+for (
+    let level = minLevel;
+    level <= maxLevel;
+    level++
+) {
+
+    if (
+        getExp100(level) !== null
+    ) {
+
+        if (
+            continuousStart === null
+        ) {
+
+            continuousStart = level;
+
+        }
+
+        continuousEnd = level;
+
+    }
+
+    else {
+
+        break;
+
+    }
+
+}
+
+
+// 表示用
+let continuousText =
+    "計算可能範囲を確認できません。";
+
+
+if (
+    continuousStart !== null
+) {
+
+    continuousText =
+        `Lv${continuousStart}～Lv${continuousEnd}`;
+
+}
+
+dataStatus.innerHTML = `
+
+    <div class="data-summary">
+
+	<p>
+    🔵 <strong>連続データ範囲</strong>
+</p>
+
+<p class="data-levels">
+    ${continuousText}
+</p>
+
+        <p>
+            📊 <strong>データ収集状況</strong>
+            ：${availableLevels.length} / ${maxLevel - minLevel + 1} レベル
+        </p>
+
+
+        <p>
+            🟢 <strong>データあり</strong>
+        </p>
+
+        <p class="data-levels">
+            ${formatLevelRanges(availableLevels)}
+        </p>
+
+
+        ${
+            missingLevels.length > 0
+                ? `
+                    <p>
+                        🔴 <strong>データ募集中</strong>
+                    </p>
+
+                    <p class="data-levels missing">
+                        ${formatLevelRanges(missingLevels)}
+                    </p>
+                  `
+                : `
+                    <p>
+                        🟢 <strong>
+                            すべての経験値データが揃っています！
+                        </strong>
+                    </p>
+                  `
+        }
+
+    </div>
+
+`;
 
     }
     catch (error) {
