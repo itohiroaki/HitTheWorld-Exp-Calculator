@@ -7,11 +7,11 @@ let expTable = {};
 
 const DEFAULT_SETTINGS = {
 
-    currentLevel: 88,
+    currentLevel: "",
 
-    currentExp: 10,
+    currentExp: "",
 
-    targetLevel: 90,
+    targetLevel: 95,
 
     expPerHour: 1.38,
 
