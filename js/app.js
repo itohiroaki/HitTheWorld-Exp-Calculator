@@ -186,7 +186,7 @@ function formatDateTime(date) {
         }
     );
 
-    return `${formattedDate} ${formattedTime}ごろ`;
+    return `${formattedDate} ${formattedTime}頃`;
 }
 
 // ==========================================
