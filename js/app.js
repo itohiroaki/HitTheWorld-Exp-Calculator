@@ -17,7 +17,7 @@ const DEFAULT_SETTINGS = {
 
     hoursPerDay: 24,
 
-    targetDate: "2026-09-30"
+    targetDate: "2026-12-31"
 
 };
 
