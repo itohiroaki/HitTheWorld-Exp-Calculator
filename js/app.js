@@ -169,6 +169,25 @@ function formatDate(date) {
 
 }
 
+// ==========================================
+// 日時フォーマット
+// ==========================================
+
+function formatDateTime(date) {
+
+    const formattedDate = formatDate(date);
+
+    const formattedTime = date.toLocaleTimeString(
+        "ja-JP",
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        }
+    );
+
+    return `${formattedDate} ${formattedTime}ごろ`;
+}
 
 // ==========================================
 // 日付計算
@@ -191,6 +210,45 @@ function addHours(date, hours) {
 
 }
 
+
+// ==========================================
+// 1日の狩り時間を考慮した到達日時計算
+//
+// 狩り開始時刻から狩りを始め、
+// 1日の狩り時間を使い切ったら翌日まで休む想定。
+// ==========================================
+
+function addHuntingHours(startDate, huntingHours, hoursPerDay) {
+
+    if (huntingHours <= 0) {
+        return new Date(startDate);
+    }
+
+    // 24時間狩りの場合は、そのまま時間を加算
+    if (hoursPerDay >= 24) {
+        return addHours(startDate, huntingHours);
+    }
+
+    const fullDays = Math.floor(huntingHours / hoursPerDay);
+    const remainder = huntingHours % hoursPerDay;
+
+    let elapsedHours;
+
+    // 狩り時間がちょうど1日分の倍数の場合
+    if (remainder < 0.0000001) {
+
+        elapsedHours =
+            (fullDays - 1) * 24 + hoursPerDay;
+
+    } else {
+
+        elapsedHours =
+            fullDays * 24 + remainder;
+
+    }
+
+    return addHours(startDate, elapsedHours);
+}
 
 // ==========================================
 // 目標日までのシミュレーション
@@ -679,10 +737,11 @@ function calculateRequiredExp() {
     // ==========================================
 
     const arrivalDate =
-        addHours(
-            today,
-            totalHours
-        );
+    addHuntingHours(
+        today,
+        totalHours,
+        hoursPerDay
+    );
 
 
     // ==========================================
@@ -1072,9 +1131,10 @@ function calculateRequiredExp() {
                 hoursPerDay;
 
             const summaryArrivalDate =
-                addHours(
+                addHuntingHours(
                     today,
-                    summaryHours
+                    summaryHours,
+                    hoursPerDay
                 );
 
             summaryHTML +=
@@ -1096,7 +1156,7 @@ function calculateRequiredExp() {
                     </td>
 
                     <td>
-                        ${formatDate(
+                        ${formatDateTime(
                             summaryArrivalDate
                         )}
                     </td>
@@ -1287,7 +1347,7 @@ function calculateRequiredExp() {
         <div class="result-item">
             到達予定日：
             <strong>
-                ${formatDate(arrivalDate)}
+                ${formatDateTime(arrivalDate)}
             </strong>
         </div>
 
